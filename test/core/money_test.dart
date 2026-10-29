@@ -63,7 +63,10 @@ void main() {
 
     test('adding amounts is exact where doubles are not', () {
       // 0.1 + 0.2 != 0.3 in floating point; as paisa it is exactly 30.
-      expect(parseRupeesToPaisa('0.10')! + parseRupeesToPaisa('0.20')!, parseRupeesToPaisa('0.30'));
+      expect(
+        parseRupeesToPaisa('0.10')! + parseRupeesToPaisa('0.20')!,
+        parseRupeesToPaisa('0.30'),
+      );
     });
 
     test('round-trips through the edit-field text', () {

@@ -110,8 +110,12 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
     if (own != null) return own;
     final consistency = ExpenseValidators.moneyConsistency(
       amountPaisa: parseRupeesToPaisa(_amount.text),
-      subtotalPaisa: _subtotal.text.trim().isEmpty ? null : parseRupeesToPaisa(_subtotal.text),
-      taxPaisa: value == null || value.trim().isEmpty ? null : parseRupeesToPaisa(value),
+      subtotalPaisa: _subtotal.text.trim().isEmpty
+          ? null
+          : parseRupeesToPaisa(_subtotal.text),
+      taxPaisa: value == null || value.trim().isEmpty
+          ? null
+          : parseRupeesToPaisa(value),
     );
     return consistency ?? _server('tax_paisa');
   }
@@ -132,7 +136,9 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
       expenseDate: _date,
       originalCalendar: _calendar,
       originalDateText: _printedDate.text,
-      subtotalPaisa: _subtotal.text.trim().isEmpty ? null : parseRupeesToPaisa(_subtotal.text),
+      subtotalPaisa: _subtotal.text.trim().isEmpty
+          ? null
+          : parseRupeesToPaisa(_subtotal.text),
       taxPaisa: _tax.text.trim().isEmpty ? null : parseRupeesToPaisa(_tax.text),
       notes: _notes.text,
     );
@@ -189,19 +195,24 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                   labelText: 'Supplier or shop',
                   border: OutlineInputBorder(),
                 ),
-                validator: (v) => ExpenseValidators.merchantName(v) ?? _server('merchant_name'),
+                validator: (v) =>
+                    ExpenseValidators.merchantName(v) ??
+                    _server('merchant_name'),
               ),
               const SizedBox(height: 16),
               TextFormField(
                 key: const Key('expense-amount'),
                 controller: _amount,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 decoration: const InputDecoration(
                   labelText: 'Total amount (NPR)',
                   prefixText: 'NPR ',
                   border: OutlineInputBorder(),
                 ),
-                validator: (v) => ExpenseValidators.amount(v) ?? _server('amount_paisa'),
+                validator: (v) =>
+                    ExpenseValidators.amount(v) ?? _server('amount_paisa'),
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
@@ -216,8 +227,11 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                   for (final c in widget.categories)
                     DropdownMenuItem<String>(value: c.id, child: Text(c.name)),
                 ],
-                onChanged: _busy ? null : (v) => setState(() => _categoryId = v),
-                validator: (v) => ExpenseValidators.category(v) ?? _server('category_id'),
+                onChanged: _busy
+                    ? null
+                    : (v) => setState(() => _categoryId = v),
+                validator: (v) =>
+                    ExpenseValidators.category(v) ?? _server('category_id'),
               ),
               const SizedBox(height: 16),
               InputDecorator(
@@ -243,55 +257,67 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                 style: Theme.of(context).textTheme.titleSmall,
               ),
               const SizedBox(height: 12),
-                  DropdownButtonFormField<PrintedCalendar>(
-                    key: const Key('expense-calendar'),
-                    initialValue: _calendar,
-                    decoration: const InputDecoration(
-                      labelText: 'Calendar used on the bill',
-                      border: OutlineInputBorder(),
+              DropdownButtonFormField<PrintedCalendar>(
+                key: const Key('expense-calendar'),
+                initialValue: _calendar,
+                decoration: const InputDecoration(
+                  labelText: 'Calendar used on the bill',
+                  border: OutlineInputBorder(),
+                ),
+                items: [
+                  for (final c in PrintedCalendar.values)
+                    DropdownMenuItem<PrintedCalendar>(
+                      value: c,
+                      child: Text(c.label),
                     ),
-                    items: [
-                      for (final c in PrintedCalendar.values)
-                        DropdownMenuItem<PrintedCalendar>(value: c, child: Text(c.label)),
-                    ],
-                    onChanged: _busy
-                        ? null
-                        : (v) => setState(() => _calendar = v ?? PrintedCalendar.unknown),
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    key: const Key('expense-printed-date'),
-                    controller: _printedDate,
-                    decoration: const InputDecoration(
-                      labelText: 'Date as printed on the bill',
-                      helperText: 'Saved exactly as typed. It is never converted.',
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (v) =>
-                        ExpenseValidators.printedDate(_calendar, v) ?? _server('original_date_text'),
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    key: const Key('expense-subtotal'),
-                    controller: _subtotal,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(
-                      labelText: 'Subtotal before tax (NPR)',
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (v) => ExpenseValidators.optionalAmount(v) ?? _server('subtotal_paisa'),
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    key: const Key('expense-tax'),
-                    controller: _tax,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(
-                      labelText: 'Tax (NPR)',
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: _taxValidator,
-                  ),
+                ],
+                onChanged: _busy
+                    ? null
+                    : (v) => setState(
+                        () => _calendar = v ?? PrintedCalendar.unknown,
+                      ),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                key: const Key('expense-printed-date'),
+                controller: _printedDate,
+                decoration: const InputDecoration(
+                  labelText: 'Date as printed on the bill',
+                  helperText: 'Saved exactly as typed. It is never converted.',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (v) =>
+                    ExpenseValidators.printedDate(_calendar, v) ??
+                    _server('original_date_text'),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                key: const Key('expense-subtotal'),
+                controller: _subtotal,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                decoration: const InputDecoration(
+                  labelText: 'Subtotal before tax (NPR)',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (v) =>
+                    ExpenseValidators.optionalAmount(v) ??
+                    _server('subtotal_paisa'),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                key: const Key('expense-tax'),
+                controller: _tax,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                decoration: const InputDecoration(
+                  labelText: 'Tax (NPR)',
+                  border: OutlineInputBorder(),
+                ),
+                validator: _taxValidator,
+              ),
 
               const SizedBox(height: 8),
               TextFormField(
@@ -302,7 +328,8 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                   labelText: 'Notes (optional)',
                   border: OutlineInputBorder(),
                 ),
-                validator: (v) => ExpenseValidators.notes(v) ?? _server('notes'),
+                validator: (v) =>
+                    ExpenseValidators.notes(v) ?? _server('notes'),
               ),
               const SizedBox(height: 24),
               FilledButton(

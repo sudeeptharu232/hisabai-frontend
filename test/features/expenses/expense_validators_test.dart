@@ -21,9 +21,15 @@ void main() {
       expect(ExpenseValidators.amount('abc'), isNotNull);
       expect(ExpenseValidators.amount('1.234'), isNotNull);
       expect(ExpenseValidators.amount('-5'), isNotNull);
-      expect(ExpenseValidators.amount('0'), 'The amount must be more than zero');
+      expect(
+        ExpenseValidators.amount('0'),
+        'The amount must be more than zero',
+      );
       expect(ExpenseValidators.amount('0.00'), isNotNull);
-      expect(ExpenseValidators.amount('100000000.01'), 'The amount is too large');
+      expect(
+        ExpenseValidators.amount('100000000.01'),
+        'The amount is too large',
+      );
       expect(ExpenseValidators.amount('0.01'), isNull);
       expect(ExpenseValidators.amount('1,250.50'), isNull);
       expect(ExpenseValidators.amount('100000000'), isNull);
@@ -56,21 +62,40 @@ void main() {
   group('printedDate', () {
     test('BS requires a date typed in a recognisable shape', () {
       expect(ExpenseValidators.printedDate(PrintedCalendar.bs, ''), isNotNull);
-      expect(ExpenseValidators.printedDate(PrintedCalendar.bs, 'Ashwin 30'), isNotNull);
-      expect(ExpenseValidators.printedDate(PrintedCalendar.bs, '2083/06/15'), isNull);
-      expect(ExpenseValidators.printedDate(PrintedCalendar.bs, '२०८३/०६/१५'), isNull);
-      expect(ExpenseValidators.printedDate(PrintedCalendar.bs, '15-6-2083'), isNull);
+      expect(
+        ExpenseValidators.printedDate(PrintedCalendar.bs, 'Ashwin 30'),
+        isNotNull,
+      );
+      expect(
+        ExpenseValidators.printedDate(PrintedCalendar.bs, '2083/06/15'),
+        isNull,
+      );
+      expect(
+        ExpenseValidators.printedDate(PrintedCalendar.bs, '२०८३/०६/१५'),
+        isNull,
+      );
+      expect(
+        ExpenseValidators.printedDate(PrintedCalendar.bs, '15-6-2083'),
+        isNull,
+      );
     });
 
     test('AD and unknown accept any text up to 32 characters, or none', () {
       expect(ExpenseValidators.printedDate(PrintedCalendar.ad, null), isNull);
-      expect(ExpenseValidators.printedDate(PrintedCalendar.unknown, '01 Oct 2026'), isNull);
-      expect(ExpenseValidators.printedDate(PrintedCalendar.ad, 'x' * 33), isNotNull);
+      expect(
+        ExpenseValidators.printedDate(PrintedCalendar.unknown, '01 Oct 2026'),
+        isNull,
+      );
+      expect(
+        ExpenseValidators.printedDate(PrintedCalendar.ad, 'x' * 33),
+        isNotNull,
+      );
     });
   });
 
   group('moneyConsistency', () {
-    String? check(int? amount, int? subtotal, int? tax) => ExpenseValidators.moneyConsistency(
+    String? check(int? amount, int? subtotal, int? tax) =>
+        ExpenseValidators.moneyConsistency(
           amountPaisa: amount,
           subtotalPaisa: subtotal,
           taxPaisa: tax,
@@ -85,8 +110,14 @@ void main() {
 
     test('allows exactly the rounding tolerance and no more', () {
       expect(check(113000 + roundingTolerancePaisa, 100000, 13000), isNull);
-      expect(check(113000 + roundingTolerancePaisa + 1, 100000, 13000), isNotNull);
-      expect(check(113000 - roundingTolerancePaisa - 1, 100000, 13000), isNotNull);
+      expect(
+        check(113000 + roundingTolerancePaisa + 1, 100000, 13000),
+        isNotNull,
+      );
+      expect(
+        check(113000 - roundingTolerancePaisa - 1, 100000, 13000),
+        isNotNull,
+      );
     });
 
     test('rejects tax or subtotal larger than the total', () {

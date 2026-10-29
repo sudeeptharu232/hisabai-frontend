@@ -86,8 +86,9 @@ class Expense {
       category: ExpenseCategory.fromJson(categoryJson),
       expenseDate: DateTime.parse(json['expense_date'] as String),
       originalDateText: json['original_date_text'] as String?,
-      originalCalendar:
-          PrintedCalendar.fromApi(json['original_calendar'] as String),
+      originalCalendar: PrintedCalendar.fromApi(
+        json['original_calendar'] as String,
+      ),
       notes: json['notes'] as String?,
     );
   }
@@ -148,16 +149,16 @@ class ExpenseInput {
   final String? notes;
 
   Map<String, Object?> toJson() => {
-        'merchant_name': merchantName.trim(),
-        'amount_paisa': amountPaisa,
-        'category_id': categoryId,
-        'expense_date': formatApiDate(expenseDate),
-        'original_calendar': originalCalendar.apiValue,
-        'original_date_text': _blankToNull(originalDateText),
-        'subtotal_paisa': subtotalPaisa,
-        'tax_paisa': taxPaisa,
-        'notes': _blankToNull(notes),
-      };
+    'merchant_name': merchantName.trim(),
+    'amount_paisa': amountPaisa,
+    'category_id': categoryId,
+    'expense_date': formatApiDate(expenseDate),
+    'original_calendar': originalCalendar.apiValue,
+    'original_date_text': _blankToNull(originalDateText),
+    'subtotal_paisa': subtotalPaisa,
+    'tax_paisa': taxPaisa,
+    'notes': _blankToNull(notes),
+  };
 
   static String? _blankToNull(String? value) {
     final trimmed = value?.trim();

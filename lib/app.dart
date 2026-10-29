@@ -8,6 +8,7 @@ import 'features/auth/login_screen.dart';
 import 'features/auth/register_screen.dart';
 import 'features/health/health_screen.dart';
 import 'features/expenses/expense_repository.dart';
+import 'features/receipts/receipt_repository.dart';
 import 'features/home/home_screen.dart';
 
 class HisabAiApp extends StatelessWidget {
@@ -16,24 +17,26 @@ class HisabAiApp extends StatelessWidget {
     required this.auth,
     required this.healthClient,
     required this.expenseRepository,
+    this.receiptRepository,
   });
 
   final AuthController auth;
   final HealthClient healthClient;
   final ExpenseRepository expenseRepository;
 
+  /// Optional: without it the app has no "Scan receipt" entry point.
+  final ReceiptRepository? receiptRepository;
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'HisabAI',
-      theme: ThemeData(
-        colorSchemeSeed: Colors.teal,
-        useMaterial3: true,
-      ),
+      theme: ThemeData(colorSchemeSeed: Colors.teal, useMaterial3: true),
       home: AuthGate(
         auth: auth,
         healthClient: healthClient,
         expenseRepository: expenseRepository,
+        receiptRepository: receiptRepository,
       ),
     );
   }
@@ -46,11 +49,13 @@ class AuthGate extends StatefulWidget {
     required this.auth,
     required this.healthClient,
     required this.expenseRepository,
+    this.receiptRepository,
   });
 
   final AuthController auth;
   final HealthClient healthClient;
   final ExpenseRepository expenseRepository;
+  final ReceiptRepository? receiptRepository;
 
   @override
   State<AuthGate> createState() => _AuthGateState();
@@ -85,7 +90,8 @@ class _AuthGateState extends State<AuthGate> {
             );
           case AuthStatus.restoreFailed:
             return _RestoreFailedScreen(
-              message: widget.auth.restoreError ?? 'Could not reach the server.',
+              message:
+                  widget.auth.restoreError ?? 'Could not reach the server.',
               onRetry: () => unawaited(widget.auth.restore()),
               onSignOut: () => unawaited(widget.auth.logout()),
             );
@@ -104,6 +110,7 @@ class _AuthGateState extends State<AuthGate> {
             return HomeScreen(
               auth: widget.auth,
               expenseRepository: widget.expenseRepository,
+              receiptRepository: widget.receiptRepository,
               onCheckConnection: _openConnectionCheck,
             );
         }

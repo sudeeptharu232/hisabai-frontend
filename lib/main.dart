@@ -9,6 +9,7 @@ import 'core/storage/token_store.dart';
 import 'features/auth/auth_controller.dart';
 import 'features/auth/auth_repository.dart';
 import 'features/expenses/expense_repository.dart';
+import 'features/receipts/receipt_repository.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,6 +37,7 @@ void main() {
       auth: auth,
       healthClient: healthClient,
       expenseRepository: ExpenseRepository(api: api),
+      receiptRepository: ReceiptRepository(api: api),
     ),
   );
 }

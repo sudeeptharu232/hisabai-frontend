@@ -12,15 +12,24 @@ Map<String, Object?> pageJson(
   int page = 1,
   int last = 1,
   int total = 0,
-}) =>
-    {
-      'data': items,
-      'meta': {'current_page': page, 'last_page': last, 'per_page': 20, 'total': total},
-    };
+}) => {
+  'data': items,
+  'meta': {
+    'current_page': page,
+    'last_page': last,
+    'per_page': 20,
+    'total': total,
+  },
+};
 
-ExpenseListController controllerFor(Future<http.Response> Function(http.Request) handler) {
+ExpenseListController controllerFor(
+  Future<http.Response> Function(http.Request) handler,
+) {
   final app = TestApp(handler, storedToken: '1|hisabai_t');
-  return ExpenseListController(repository: app.expenseRepository, businessId: businessId);
+  return ExpenseListController(
+    repository: app.expenseRepository,
+    businessId: businessId,
+  );
 }
 
 void main() {
@@ -39,7 +48,9 @@ void main() {
   });
 
   test('an empty business loads as an empty list, not an error', () async {
-    final controller = controllerFor((_) async => jsonResponse(200, pageJson([])));
+    final controller = controllerFor(
+      (_) async => jsonResponse(200, pageJson([])),
+    );
 
     await controller.load();
 
@@ -90,7 +101,10 @@ void main() {
     final controller = controllerFor((request) async {
       final page = int.parse(request.url.queryParameters['page']!);
       if (page == 2 && failNext) throw http.ClientException('offline');
-      return jsonResponse(200, pageJson([expenseJson(id: 'exp-$page')], page: page, last: 2, total: 2));
+      return jsonResponse(
+        200,
+        pageJson([expenseJson(id: 'exp-$page')], page: page, last: 2, total: 2),
+      );
     });
     await controller.load();
 
@@ -106,39 +120,46 @@ void main() {
     expect(controller.loadMoreError, isNull);
   });
 
-  test('search and category filters are sent to the server and reset paging', () async {
-    final seen = <Map<String, String>>[];
-    final controller = controllerFor((request) async {
-      seen.add(request.url.queryParameters);
-      return jsonResponse(200, pageJson([]));
-    });
+  test(
+    'search and category filters are sent to the server and reset paging',
+    () async {
+      final seen = <Map<String, String>>[];
+      final controller = controllerFor((request) async {
+        seen.add(request.url.queryParameters);
+        return jsonResponse(200, pageJson([]));
+      });
 
-    await controller.load();
-    await controller.setQuery('  ram ');
-    await controller.setCategory('cat-rent');
+      await controller.load();
+      await controller.setQuery('  ram ');
+      await controller.setCategory('cat-rent');
 
-    expect(seen[0].containsKey('q'), isFalse);
-    expect(seen[1]['q'], 'ram');
-    expect(seen[2]['q'], 'ram');
-    expect(seen[2]['category_id'], 'cat-rent');
-    expect(seen[2]['page'], '1');
-    expect(controller.hasFilters, isTrue);
+      expect(seen[0].containsKey('q'), isFalse);
+      expect(seen[1]['q'], 'ram');
+      expect(seen[2]['q'], 'ram');
+      expect(seen[2]['category_id'], 'cat-rent');
+      expect(seen[2]['page'], '1');
+      expect(controller.hasFilters, isTrue);
 
-    await controller.setQuery('');
-    await controller.setCategory(null);
-    expect(controller.hasFilters, isFalse);
-  });
+      await controller.setQuery('');
+      await controller.setCategory(null);
+      expect(controller.hasFilters, isFalse);
+    },
+  );
 
   test('an outdated response never overwrites a newer one', () async {
     final slow = Completer<http.Response>();
     final controller = controllerFor((request) {
       if (request.url.queryParameters['q'] == 'old') return slow.future;
-      return Future.value(jsonResponse(200, pageJson([expenseJson(id: 'new')], total: 1)));
+      return Future.value(
+        jsonResponse(200, pageJson([expenseJson(id: 'new')], total: 1)),
+      );
     });
 
     final first = controller.setQuery('old'); // slow
     await controller.setQuery('fresh'); // fast, started later
-    slow.complete(jsonResponse(200, pageJson([expenseJson(id: 'old')], total: 1)));
+    slow.complete(
+      jsonResponse(200, pageJson([expenseJson(id: 'old')], total: 1)),
+    );
     await first;
 
     expect(controller.items.single.id, 'new');
@@ -146,7 +167,8 @@ void main() {
 
   test('a category load failure does not break the list', () async {
     final controller = controllerFor((request) async {
-      if (request.url.path.endsWith('/categories')) throw http.ClientException('offline');
+      if (request.url.path.endsWith('/categories'))
+        throw http.ClientException('offline');
       return jsonResponse(200, pageJson([expenseJson()], total: 1));
     });
 
@@ -172,23 +194,38 @@ void main() {
     expect(controller.status, ExpenseListStatus.loaded);
   });
 
-  test('changing a filter during load-more does not leave pagination stuck', () async {
-    final slowPage2 = Completer<http.Response>();
-    final controller = controllerFor((request) {
-      final params = request.url.queryParameters;
-      if (params['page'] == '2') return slowPage2.future;
-      return Future.value(jsonResponse(200, pageJson([expenseJson(id: 'p1')], last: 2, total: 2)));
-    });
-    await controller.load();
+  test(
+    'changing a filter during load-more does not leave pagination stuck',
+    () async {
+      final slowPage2 = Completer<http.Response>();
+      final controller = controllerFor((request) {
+        final params = request.url.queryParameters;
+        if (params['page'] == '2') return slowPage2.future;
+        return Future.value(
+          jsonResponse(
+            200,
+            pageJson([expenseJson(id: 'p1')], last: 2, total: 2),
+          ),
+        );
+      });
+      await controller.load();
 
-    final pending = controller.loadMore(); // page 2, slow
-    await controller.setQuery('x'); // new generation while page 2 is in flight
-    slowPage2.complete(jsonResponse(200, pageJson([expenseJson(id: 'p2')], page: 2, last: 2, total: 2)));
-    await pending;
+      final pending = controller.loadMore(); // page 2, slow
+      await controller.setQuery(
+        'x',
+      ); // new generation while page 2 is in flight
+      slowPage2.complete(
+        jsonResponse(
+          200,
+          pageJson([expenseJson(id: 'p2')], page: 2, last: 2, total: 2),
+        ),
+      );
+      await pending;
 
-    expect(controller.loadingMore, isFalse);
-    expect(controller.items.map((e) => e.id), ['p1']);
-    await controller.loadMore(); // must be possible again
-    expect(controller.loadingMore, isFalse);
-  });
+      expect(controller.loadingMore, isFalse);
+      expect(controller.items.map((e) => e.id), ['p1']);
+      await controller.loadMore(); // must be possible again
+      expect(controller.loadingMore, isFalse);
+    },
+  );
 }

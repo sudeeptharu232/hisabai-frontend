@@ -29,8 +29,14 @@ Future<void> pumpApp(
 
 TestApp? appUnderTest;
 
-Future<void> signIn(WidgetTester tester, {String password = 'correct-pass-1'}) async {
-  await tester.enterText(find.byKey(const Key('login-email')), 'sita@example.com');
+Future<void> signIn(
+  WidgetTester tester, {
+  String password = 'correct-pass-1',
+}) async {
+  await tester.enterText(
+    find.byKey(const Key('login-email')),
+    'sita@example.com',
+  );
   await tester.enterText(find.byKey(const Key('login-password')), password);
   await tester.tap(find.byKey(const Key('login-submit')));
   await tester.pumpAndSettle();
@@ -38,7 +44,9 @@ Future<void> signIn(WidgetTester tester, {String password = 'correct-pass-1'}) a
 
 void main() {
   group('start-up', () {
-    testWidgets('shows the login screen when nobody is signed in', (tester) async {
+    testWidgets('shows the login screen when nobody is signed in', (
+      tester,
+    ) async {
       final server = FakeServer();
       await pumpApp(tester, server);
 
@@ -46,7 +54,9 @@ void main() {
       expect(server.requests, isEmpty);
     });
 
-    testWidgets('goes straight to home when a stored token is still valid', (tester) async {
+    testWidgets('goes straight to home when a stored token is still valid', (
+      tester,
+    ) async {
       final server = FakeServer();
       await pumpApp(tester, server, storedToken: FakeServer.token);
 
@@ -54,14 +64,18 @@ void main() {
       expect(find.byKey(const Key('login-submit')), findsNothing);
     });
 
-    testWidgets('falls back to login when the stored token was revoked', (tester) async {
+    testWidgets('falls back to login when the stored token was revoked', (
+      tester,
+    ) async {
       final server = FakeServer()..tokenValid = false;
       await pumpApp(tester, server, storedToken: FakeServer.token);
 
       expect(find.byKey(const Key('login-submit')), findsOneWidget);
     });
 
-    testWidgets('offers a retry when the server is unreachable at start', (tester) async {
+    testWidgets('offers a retry when the server is unreachable at start', (
+      tester,
+    ) async {
       final server = FakeServer()..offline = true;
       await pumpApp(tester, server, storedToken: FakeServer.token);
 
@@ -76,7 +90,9 @@ void main() {
   });
 
   group('login', () {
-    testWidgets('validates empty fields without calling the server', (tester) async {
+    testWidgets('validates empty fields without calling the server', (
+      tester,
+    ) async {
       final server = FakeServer();
       await pumpApp(tester, server);
 
@@ -94,11 +110,16 @@ void main() {
 
       await signIn(tester, password: 'wrong-password');
 
-      expect(find.text('These credentials do not match our records.'), findsOneWidget);
+      expect(
+        find.text('These credentials do not match our records.'),
+        findsOneWidget,
+      );
       expect(find.byKey(const Key('login-submit')), findsOneWidget);
     });
 
-    testWidgets('shows a network error when the server is down', (tester) async {
+    testWidgets('shows a network error when the server is down', (
+      tester,
+    ) async {
       final server = FakeServer()..offline = true;
       await pumpApp(tester, server);
 
@@ -107,7 +128,9 @@ void main() {
       expect(find.textContaining('Cannot reach the server'), findsOneWidget);
     });
 
-    testWidgets('keeps the existing connectivity check reachable', (tester) async {
+    testWidgets('keeps the existing connectivity check reachable', (
+      tester,
+    ) async {
       final server = FakeServer();
       await pumpApp(tester, server);
 
@@ -129,7 +152,10 @@ void main() {
       await pumpApp(tester, server);
       await openRegister(tester);
 
-      await tester.enterText(find.byKey(const Key('register-password')), 'short');
+      await tester.enterText(
+        find.byKey(const Key('register-password')),
+        'short',
+      );
       await tester.tap(find.byKey(const Key('register-submit')));
       await tester.pumpAndSettle();
 
@@ -138,29 +164,47 @@ void main() {
       expect(server.requests, isEmpty);
     });
 
-    testWidgets('shows a duplicate-email error from the server under the field', (tester) async {
-      final server = FakeServer();
-      await pumpApp(tester, server);
-      await openRegister(tester);
+    testWidgets(
+      'shows a duplicate-email error from the server under the field',
+      (tester) async {
+        final server = FakeServer();
+        await pumpApp(tester, server);
+        await openRegister(tester);
 
-      await tester.enterText(find.byKey(const Key('register-name')), 'Sita');
-      await tester.enterText(find.byKey(const Key('register-email')), server.takenEmail);
-      await tester.enterText(find.byKey(const Key('register-password')), 'long-enough-1');
-      await tester.tap(find.byKey(const Key('register-submit')));
-      await tester.pumpAndSettle();
+        await tester.enterText(find.byKey(const Key('register-name')), 'Sita');
+        await tester.enterText(
+          find.byKey(const Key('register-email')),
+          server.takenEmail,
+        );
+        await tester.enterText(
+          find.byKey(const Key('register-password')),
+          'long-enough-1',
+        );
+        await tester.tap(find.byKey(const Key('register-submit')));
+        await tester.pumpAndSettle();
 
-      expect(find.text('The email has already been taken.'), findsOneWidget);
-      expect(find.byKey(const Key('register-submit')), findsOneWidget);
-    });
+        expect(find.text('The email has already been taken.'), findsOneWidget);
+        expect(find.byKey(const Key('register-submit')), findsOneWidget);
+      },
+    );
 
     testWidgets('registers, signs in, and lands on home', (tester) async {
       final server = FakeServer();
       await pumpApp(tester, server);
       await openRegister(tester);
 
-      await tester.enterText(find.byKey(const Key('register-name')), 'Sita Sharma');
-      await tester.enterText(find.byKey(const Key('register-email')), 'sita@example.com');
-      await tester.enterText(find.byKey(const Key('register-password')), 'long-enough-1');
+      await tester.enterText(
+        find.byKey(const Key('register-name')),
+        'Sita Sharma',
+      );
+      await tester.enterText(
+        find.byKey(const Key('register-email')),
+        'sita@example.com',
+      );
+      await tester.enterText(
+        find.byKey(const Key('register-password')),
+        'long-enough-1',
+      );
       await tester.tap(find.byKey(const Key('register-submit')));
       await tester.pumpAndSettle();
 
@@ -170,66 +214,88 @@ void main() {
   });
 
   group('signed in', () {
-    testWidgets('full flow: sign in, create business, invite, verify, sign out', (tester) async {
+    testWidgets(
+      'full flow: sign in, create business, invite, verify, sign out',
+      (tester) async {
+        final server = FakeServer();
+        await pumpApp(tester, server);
+
+        await signIn(tester);
+        expect(find.text('Set up your business'), findsOneWidget);
+
+        await tester.enterText(
+          find.byKey(const Key('business-name')),
+          'Himal Kirana Pasal',
+        );
+        await tester.tap(find.byKey(const Key('business-create')));
+        await tester.pumpAndSettle();
+        expect(find.text('Himal Kirana Pasal'), findsOneWidget);
+        expect(find.text('Your role: Owner'), findsOneWidget);
+
+        await tester.tap(find.byKey(const Key('create-invitation')));
+        await tester.pumpAndSettle();
+        expect(find.byKey(const Key('invitation-code-text')), findsOneWidget);
+        expect(find.text('hbinv_FAKECODE1234567890'), findsOneWidget);
+        await tester.tap(find.text('Close'));
+        await tester.pumpAndSettle();
+
+        final before = server.count('GET /api/v1/me');
+        await tester.tap(find.byKey(const Key('refresh')));
+        await tester.pumpAndSettle();
+        expect(server.count('GET /api/v1/me'), before + 1);
+
+        await tester.tap(find.byKey(const Key('logout')));
+        await tester.pumpAndSettle();
+        expect(find.byKey(const Key('login-submit')), findsOneWidget);
+        expect(server.count('POST /api/v1/auth/logout'), 1);
+        expect(await appUnderTest!.tokenStore.read(), isNull);
+      },
+    );
+
+    testWidgets('joining with a wrong code shows the server error', (
+      tester,
+    ) async {
       final server = FakeServer();
       await pumpApp(tester, server);
-
-      await signIn(tester);
-      expect(find.text('Set up your business'), findsOneWidget);
-
-      await tester.enterText(find.byKey(const Key('business-name')), 'Himal Kirana Pasal');
-      await tester.tap(find.byKey(const Key('business-create')));
-      await tester.pumpAndSettle();
-      expect(find.text('Himal Kirana Pasal'), findsOneWidget);
-      expect(find.text('Your role: Owner'), findsOneWidget);
-
-      await tester.tap(find.byKey(const Key('create-invitation')));
-      await tester.pumpAndSettle();
-      expect(find.byKey(const Key('invitation-code-text')), findsOneWidget);
-      expect(find.text('hbinv_FAKECODE1234567890'), findsOneWidget);
-      await tester.tap(find.text('Close'));
-      await tester.pumpAndSettle();
-
-      final before = server.count('GET /api/v1/me');
-      await tester.tap(find.byKey(const Key('refresh')));
-      await tester.pumpAndSettle();
-      expect(server.count('GET /api/v1/me'), before + 1);
-
-      await tester.tap(find.byKey(const Key('logout')));
-      await tester.pumpAndSettle();
-      expect(find.byKey(const Key('login-submit')), findsOneWidget);
-      expect(server.count('POST /api/v1/auth/logout'), 1);
-      expect(await appUnderTest!.tokenStore.read(), isNull);
-    });
-
-    testWidgets('joining with a wrong code shows the server error', (tester) async {
-      final server = FakeServer();
-      await pumpApp(tester, server);
       await signIn(tester);
 
-      await tester.enterText(find.byKey(const Key('invitation-code')), 'hbinv_wrong');
+      await tester.enterText(
+        find.byKey(const Key('invitation-code')),
+        'hbinv_wrong',
+      );
       await tester.tap(find.byKey(const Key('business-join')));
       await tester.pumpAndSettle();
 
-      expect(find.text('This invitation code is invalid or has expired.'), findsOneWidget);
+      expect(
+        find.text('This invitation code is invalid or has expired.'),
+        findsOneWidget,
+      );
       expect(find.text('Set up your business'), findsOneWidget);
     });
 
-    testWidgets('joining with a valid code shows a member without invite rights', (tester) async {
-      final server = FakeServer();
-      await pumpApp(tester, server);
-      await signIn(tester);
+    testWidgets(
+      'joining with a valid code shows a member without invite rights',
+      (tester) async {
+        final server = FakeServer();
+        await pumpApp(tester, server);
+        await signIn(tester);
 
-      await tester.enterText(find.byKey(const Key('invitation-code')), 'hbinv_goodcode');
-      await tester.tap(find.byKey(const Key('business-join')));
-      await tester.pumpAndSettle();
+        await tester.enterText(
+          find.byKey(const Key('invitation-code')),
+          'hbinv_goodcode',
+        );
+        await tester.tap(find.byKey(const Key('business-join')));
+        await tester.pumpAndSettle();
 
-      expect(find.text('Joined Shop'), findsOneWidget);
-      expect(find.text('Your role: Member'), findsOneWidget);
-      expect(find.byKey(const Key('create-invitation')), findsNothing);
-    });
+        expect(find.text('Joined Shop'), findsOneWidget);
+        expect(find.text('Your role: Member'), findsOneWidget);
+        expect(find.byKey(const Key('create-invitation')), findsNothing);
+      },
+    );
 
-    testWidgets('a revoked token during use returns the user to login', (tester) async {
+    testWidgets('a revoked token during use returns the user to login', (
+      tester,
+    ) async {
       final server = FakeServer();
       await pumpApp(tester, server);
       await signIn(tester);

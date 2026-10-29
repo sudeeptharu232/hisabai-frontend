@@ -18,8 +18,8 @@ class ApiClient {
     required http.Client httpClient,
     required TokenStore tokenStore,
     this.timeout = const Duration(seconds: 15),
-  })  : _http = httpClient,
-        _tokenStore = tokenStore;
+  }) : _http = httpClient,
+       _tokenStore = tokenStore;
 
   final ApiConfig config;
   final Duration timeout;
@@ -59,6 +59,58 @@ class ApiClient {
     bool authenticated = true,
   }) {
     return _send('DELETE', path, authenticated: authenticated);
+  }
+
+  /// POSTs one file as `multipart/form-data`; the server reads it by [fileField].
+  ///
+  /// Uses the same bearer token and error handling as the JSON methods. [timeout]
+  /// replaces the default for this call only (reading a receipt takes the server
+  /// several seconds because it waits for Gemini). The file's content type is not
+  /// declared: the server detects it from the bytes.
+  Future<Map<String, dynamic>> postMultipart(
+    String path, {
+    required String fileField,
+    required List<int> bytes,
+    required String filename,
+    Duration? timeout,
+    bool authenticated = true,
+  }) async {
+    final headers = <String, String>{'Accept': 'application/json'};
+    if (authenticated) {
+      final token = await _tokenStore.read();
+      if (token == null) {
+        throw const UnauthorizedException('You are not signed in.');
+      }
+      headers['Authorization'] = 'Bearer $token';
+    }
+
+    final request = http.MultipartRequest('POST', config.uri(path))
+      ..headers.addAll(headers)
+      ..files.add(
+        http.MultipartFile.fromBytes(fileField, bytes, filename: filename),
+      );
+
+    Future<http.Response> sendIt() async {
+      final streamed = await _http.send(request);
+      return http.Response.fromStream(streamed);
+    }
+
+    final http.Response response;
+    try {
+      response = await sendIt().timeout(timeout ?? this.timeout);
+    } on TimeoutException {
+      throw const NetworkException('The server took too long to respond.');
+    } on SocketException {
+      throw const NetworkException(
+        'Cannot reach the server. Check your connection and try again.',
+      );
+    } on http.ClientException {
+      throw const NetworkException(
+        'Cannot reach the server. Check your connection and try again.',
+      );
+    }
+
+    return _handle(response, authenticated: authenticated);
   }
 
   Future<Map<String, dynamic>> _send(
@@ -119,6 +171,9 @@ class ApiClient {
     final serverMessage = json != null && json['message'] is String
         ? json['message'] as String
         : null;
+    final code = json != null && json['code'] is String
+        ? json['code'] as String
+        : null;
 
     if (status >= 200 && status < 300) {
       if (json != null) return json;
@@ -130,36 +185,49 @@ class ApiClient {
 
     if (status == 401) {
       if (authenticated) onSessionExpired?.call();
-      throw UnauthorizedException(serverMessage ?? 'Authentication failed.');
+      throw UnauthorizedException(
+        serverMessage ?? 'Authentication failed.',
+        code: code,
+      );
     }
     if (status == 403) {
       throw ForbiddenException(
         serverMessage ?? 'You are not allowed to do that.',
+        code: code,
       );
     }
     if (status == 404) {
-      throw NotFoundException(serverMessage ?? 'Not found.');
+      throw NotFoundException(serverMessage ?? 'Not found.', code: code);
     }
     if (status == 409) {
-      throw ConflictException(serverMessage ?? 'This conflicts with existing data.');
+      throw ConflictException(
+        serverMessage ?? 'This conflicts with existing data.',
+        code: code,
+      );
     }
     if (status == 422) {
       throw ValidationException(
         serverMessage ?? 'Please check the highlighted fields.',
         _parseErrors(json?['errors']),
+        code: code,
       );
     }
     if (status == 429) {
-      throw const RateLimitedException(
+      throw RateLimitedException(
         'Too many attempts. Please wait a minute and try again.',
+        code: code,
       );
     }
     if (status >= 500) {
-      throw const ServerException(
+      throw ServerException(
         'The server had a problem. Please try again shortly.',
+        code: code,
       );
     }
-    throw UnexpectedResponseException('Unexpected response (HTTP $status).');
+    throw UnexpectedResponseException(
+      'Unexpected response (HTTP $status).',
+      code: code,
+    );
   }
 
   Map<String, dynamic>? _decodeObject(String source) {

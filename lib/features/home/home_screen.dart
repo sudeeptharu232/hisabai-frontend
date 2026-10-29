@@ -5,6 +5,7 @@ import '../auth/auth_controller.dart';
 import '../auth/auth_models.dart';
 import '../business/business_setup_view.dart';
 import '../expenses/expense_list_screen.dart';
+import '../receipts/receipt_repository.dart';
 import '../expenses/expense_repository.dart';
 
 /// Shown after sign-in. M1 content only: who is signed in, which business they
@@ -15,10 +16,12 @@ class HomeScreen extends StatefulWidget {
     required this.auth,
     required this.expenseRepository,
     required this.onCheckConnection,
+    this.receiptRepository,
   });
 
   final AuthController auth;
   final ExpenseRepository expenseRepository;
+  final ReceiptRepository? receiptRepository;
   final VoidCallback onCheckConnection;
 
   @override
@@ -78,8 +81,9 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     } on ApiException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     }
   }
 
@@ -140,6 +144,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           MaterialPageRoute<void>(
                             builder: (_) => ExpenseListScreen(
                               repository: widget.expenseRepository,
+                              receiptRepository: widget.receiptRepository,
                               business: business,
                               user: session.user,
                             ),
@@ -175,7 +180,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       verified == null
                           ? 'Not yet verified.'
                           : 'Signed-in session verified with the server at '
-                              '${TimeOfDay.fromDateTime(verified).format(context)}.',
+                                '${TimeOfDay.fromDateTime(verified).format(context)}.',
                     ),
                     if (_refreshError != null) ...[
                       const SizedBox(height: 4),

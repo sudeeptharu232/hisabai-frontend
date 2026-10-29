@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 
 import '../../core/money/money.dart';
 import '../auth/auth_models.dart';
+import '../receipts/receipt_repository.dart';
+import '../receipts/receipt_scan_screen.dart';
 import 'expense_detail_screen.dart';
 import 'expense_form_screen.dart';
 import 'expense_list_controller.dart';
@@ -16,11 +18,15 @@ class ExpenseListScreen extends StatefulWidget {
     required this.repository,
     required this.business,
     required this.user,
+    this.receiptRepository,
   });
 
   final ExpenseRepository repository;
   final BusinessSummary business;
   final AuthUser user;
+
+  /// Optional: when null there is no "Scan receipt" button.
+  final ReceiptRepository? receiptRepository;
 
   @override
   State<ExpenseListScreen> createState() => _ExpenseListScreenState();
@@ -52,7 +58,9 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
       widget.business.isOwner || expense.createdBy == widget.user.id;
 
   void _snack(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _add() async {
@@ -64,6 +72,28 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
         builder: (_) => ExpenseFormScreen(
           repository: widget.repository,
           businessId: widget.business.id,
+          categories: _controller.categories,
+        ),
+      ),
+    );
+    if (saved != null && mounted) {
+      _snack('Expense saved');
+      await _controller.load(showSpinner: false);
+    }
+  }
+
+  Future<void> _scan() async {
+    final receiptRepository = widget.receiptRepository;
+    if (receiptRepository == null) return;
+    // Same as _add: categories may have failed to load earlier.
+    if (_controller.categories.isEmpty) await _controller.loadCategories();
+    if (!mounted) return;
+    final saved = await Navigator.of(context).push<Expense>(
+      MaterialPageRoute<Expense>(
+        builder: (_) => ReceiptScanScreen(
+          receiptRepository: receiptRepository,
+          expenseRepository: widget.repository,
+          business: widget.business,
           categories: _controller.categories,
         ),
       ),
@@ -95,7 +125,18 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('${widget.business.name} - expenses')),
+      appBar: AppBar(
+        title: Text('${widget.business.name} - expenses'),
+        actions: [
+          if (widget.receiptRepository != null)
+            IconButton(
+              key: const Key('scan-receipt'),
+              tooltip: 'Scan receipt',
+              icon: const Icon(Icons.document_scanner),
+              onPressed: () => unawaited(_scan()),
+            ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(
         key: const Key('add-expense'),
         onPressed: () => unawaited(_add()),
@@ -179,7 +220,9 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
         return ListTile(
           key: Key('expense-${expense.id}'),
           title: Text(expense.merchantName),
-          subtitle: Text('${formatApiDate(expense.expenseDate)} - ${expense.category.name}'),
+          subtitle: Text(
+            '${formatApiDate(expense.expenseDate)} - ${expense.category.name}',
+          ),
           trailing: Text(
             formatNpr(expense.amountPaisa),
             style: Theme.of(context).textTheme.titleSmall,
@@ -218,7 +261,9 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
         child: TextButton(
           key: const Key('expenses-load-more'),
           onPressed: () => unawaited(_controller.loadMore()),
-          child: Text('Load more (${_controller.items.length} of ${_controller.total})'),
+          child: Text(
+            'Load more (${_controller.items.length} of ${_controller.total})',
+          ),
         ),
       );
     }

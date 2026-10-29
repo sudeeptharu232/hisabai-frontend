@@ -24,32 +24,39 @@ Map<String, Object?> userJson({
   int id = 1,
   String name = 'Sita Sharma',
   String email = 'sita@example.com',
-}) =>
-    {'id': id, 'name': name, 'email': email, 'created_at': '2026-10-17T00:00:00+00:00'};
+}) => {
+  'id': id,
+  'name': name,
+  'email': email,
+  'created_at': '2026-10-17T00:00:00+00:00',
+};
 
 Map<String, Object?> businessJson({
   String id = '0198a3c4-0000-7000-8000-000000000001',
   String name = 'Himal Kirana Pasal',
   String role = 'owner',
-}) =>
-    {'id': id, 'name': name, 'role': role, 'created_at': '2026-10-17T00:00:00+00:00'};
+}) => {
+  'id': id,
+  'name': name,
+  'role': role,
+  'created_at': '2026-10-17T00:00:00+00:00',
+};
 
 Map<String, Object?> meJson({
   Map<String, Object?>? user,
   List<Map<String, Object?>> businesses = const [],
-}) =>
-    {
-      'data': {'user': user ?? userJson(), 'businesses': businesses},
-    };
+}) => {
+  'data': {'user': user ?? userJson(), 'businesses': businesses},
+};
 
 Map<String, Object?> tokenJson({String token = '1|hisabai_testtoken'}) => {
-      'data': {
-        'token': token,
-        'token_type': 'Bearer',
-        'expires_at': null,
-        'user': userJson(),
-      },
-    };
+  'data': {
+    'token': token,
+    'token_type': 'Bearer',
+    'expires_at': null,
+    'user': userJson(),
+  },
+};
 
 /// A request seen by the fake server.
 class Seen {

@@ -67,7 +67,8 @@ class ExpenseValidators {
     if (taxPaisa != null && taxPaisa > amountPaisa) {
       return 'The tax cannot be larger than the total';
     }
-    if (subtotalPaisa != null && subtotalPaisa > amountPaisa + roundingTolerancePaisa) {
+    if (subtotalPaisa != null &&
+        subtotalPaisa > amountPaisa + roundingTolerancePaisa) {
       return 'The subtotal cannot be larger than the total';
     }
     if (subtotalPaisa != null && taxPaisa != null) {

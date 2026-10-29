@@ -51,9 +51,9 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
     );
     if (updated != null && mounted) {
       setState(() => _expense = updated);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Changes saved')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Changes saved')));
     }
   }
 
@@ -90,7 +90,9 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() => _deleting = false);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     }
   }
 
@@ -139,7 +141,8 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
               ),
             if (e.subtotalPaisa != null)
               _Row(label: 'Subtotal', value: formatNpr(e.subtotalPaisa!)),
-            if (e.taxPaisa != null) _Row(label: 'Tax', value: formatNpr(e.taxPaisa!)),
+            if (e.taxPaisa != null)
+              _Row(label: 'Tax', value: formatNpr(e.taxPaisa!)),
             if (e.notes != null) _Row(label: 'Notes', value: e.notes!),
           ],
         ),

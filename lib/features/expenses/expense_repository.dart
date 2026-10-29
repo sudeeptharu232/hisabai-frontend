@@ -39,10 +39,7 @@ class ExpenseRepository {
       if (from != null) 'from': formatApiDate(from),
       if (to != null) 'to': formatApiDate(to),
     };
-    final json = await _api.get(
-      '${_base(businessId)}/expenses',
-      query: params,
-    );
+    final json = await _api.get('${_base(businessId)}/expenses', query: params);
     return parseResponse(() {
       final meta = json['meta'] as Map<String, dynamic>;
       return ExpensePage(

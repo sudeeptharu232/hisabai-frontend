@@ -67,7 +67,10 @@ void main() {
       (_) => jsonResponse(403, {'message': 'This action is unauthorized.'}),
     );
 
-    await expectLater(client.patch('/x', body: {}), throwsA(isA<ForbiddenException>()));
+    await expectLater(
+      client.patch('/x', body: {}),
+      throwsA(isA<ForbiddenException>()),
+    );
     await expectLater(client.delete('/x'), throwsA(isA<ForbiddenException>()));
   });
 }

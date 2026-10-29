@@ -31,7 +31,8 @@ class FakeExpenseServer {
 
   int _nextId = 1;
 
-  static Map<String, Object?> _category(String id, String slug, String name) => {
+  static Map<String, Object?> _category(String id, String slug, String name) =>
+      {
         'id': id,
         'name': name,
         'slug': slug,
@@ -68,8 +69,13 @@ class FakeExpenseServer {
     return expense;
   }
 
-  Map<String, Object?> _build(Map<String, dynamic> body, {int createdBy = userId}) {
-    final category = categories.firstWhere((c) => c['id'] == body['category_id']);
+  Map<String, Object?> _build(
+    Map<String, dynamic> body, {
+    int createdBy = userId,
+  }) {
+    final category = categories.firstWhere(
+      (c) => c['id'] == body['category_id'],
+    );
     return {
       'id': 'exp-${_nextId++}',
       'business_id': businessId,
@@ -103,7 +109,11 @@ class FakeExpenseServer {
         meJson(
           user: userJson(id: userId),
           businesses: [
-            businessJson(id: businessId, name: 'Himal Kirana Pasal', role: isOwner ? 'owner' : 'member'),
+            businessJson(
+              id: businessId,
+              name: 'Himal Kirana Pasal',
+              role: isOwner ? 'owner' : 'member',
+            ),
           ],
         ),
       );
@@ -127,7 +137,10 @@ class FakeExpenseServer {
         case 'PATCH':
           final body = jsonDecode(request.body) as Map<String, dynamic>;
           final merged = {...expenses[index], ...body};
-          final rebuilt = _build(merged.cast<String, dynamic>(), createdBy: expenses[index]['created_by']! as int);
+          final rebuilt = _build(
+            merged.cast<String, dynamic>(),
+            createdBy: expenses[index]['created_by']! as int,
+          );
           rebuilt['id'] = id;
           expenses[index] = rebuilt;
           return jsonResponse(200, {'data': rebuilt});
@@ -154,7 +167,9 @@ class FakeExpenseServer {
     final page = int.parse(params['page'] ?? '1');
 
     final filtered = expenses.where((e) {
-      if (q != null && !(e['merchant_name']! as String).toLowerCase().contains(q)) return false;
+      if (q != null &&
+          !(e['merchant_name']! as String).toLowerCase().contains(q))
+        return false;
       if (categoryId != null && e['category_id'] != categoryId) return false;
       return true;
     }).toList();
